@@ -12,7 +12,8 @@
 #include <algorithm>
 
 Scene::Scene(void) :
-    _rootNode(new Node()), _nodes(), _lights(), _currentCamera(NULL), _exposure(2.0), _backgroundColor()
+    _rootNode(new Node("Root")), _nodes(), _lights(), _currentCamera(NULL), _exposure(2.0),
+    _backgroundColor()
 {
 }
 
@@ -66,7 +67,7 @@ Camera* Scene::getCurrentCamera(void) {
     return _currentCamera;
 }
 
-Node* Scene::getRootNode(void) {
+Node* Scene::getRootNode(void) const {
     return _rootNode;
 }
 

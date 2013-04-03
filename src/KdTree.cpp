@@ -36,13 +36,17 @@ bool KdTree::NodeComparator::operator()(Node *node1, Node *node2) {
 }
 
 KdTree::KdTree(void) :
-    _maxLevel(20), _rootNode(NULL), _invalidNodes()
+    _maxDepth(20), _rootNode(NULL), _invalidNodes()
 {
     
 }
 
 KdTree::~KdTree(void) {
     
+}
+
+void KdTree::setMaxDepth(uint32_t maxDepth) {
+    _maxDepth = maxDepth;
 }
 
 void KdTree::build(const std::vector<Node*>& nodes) {
@@ -88,8 +92,7 @@ void KdTree::build(const std::vector<Node*>& nodes) {
 }
 
 void KdTree::_buildTreeNode(TreeNode* treeNode, uint32_t level) {
-    if (level == _maxLevel || treeNode->nodes.size() <= 2) {
-        //d(treeNode->nodes.size());
+    if (level == _maxDepth || treeNode->nodes.size() <= 2) {
         return ;
     }
     

@@ -37,7 +37,7 @@ public:
     Scene& operator<<(Node* node);
     
     Camera* getCurrentCamera(void);
-    Node*   getRootNode(void);
+    Node*   getRootNode(void) const;
     
     std::vector<Node*>&     getNodes(void);
     std::vector<Light*>&    getLights(void);

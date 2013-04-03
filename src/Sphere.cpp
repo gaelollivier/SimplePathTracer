@@ -8,12 +8,25 @@
 
 #include "Sphere.h"
 
+Sphere::Sphere(void) :
+    Object(vec3(), NULL), _radius(0)
+{
+}
+
 Sphere::Sphere(vec3 position, float radius, Material* material) :
     Object(position, material), _radius(radius)
 {
 }
 
 Sphere::~Sphere(void) {
+}
+
+float Sphere::getRadius(void) const {
+    return _radius;
+}
+
+void Sphere::setRadius(float radius) {
+    _radius = radius;
 }
 
 void Sphere::update(void) {

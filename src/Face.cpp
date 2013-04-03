@@ -16,14 +16,6 @@ Face::Face(vec3 p0, vec3 p1, vec3 p2, Material* material) :
     _points[0] = p0;
     _points[1] = p1;
     _points[2] = p2;
-    
-    vec3 pMin = p0;
-    vec3 pMax = p0;
-    for (uint8_t i = 0; i < 3; ++i) {
-        pMin = min(pMin, _points[i]);
-        pMax = max(pMax, _points[i]);
-    }
-    _boundingBox = BoundingBox(pMin, pMax);
 }
 
 Face::~Face(void) {
@@ -49,8 +41,18 @@ void Face::computeNormal(void) {
 
 void Face::update(void) {
     Object::update();
-    for (uint8_t i = 0; i < 3; ++i)
-        _absolutePoints[i] = _points[i] += _absolutePosition;
+    for (uint8_t i = 0; i < 3; ++i) {
+        _absolutePoints[i] = vec3(_transformationMatrix * vec4(_points[i], 1));
+        _normals[i] = normalize(vec3(_transformationMatrix * vec4(_normals[i], 1)));
+    }
+    // Update bouding box
+    vec3 pMin = _absolutePoints[0];
+    vec3 pMax = _absolutePoints[0];
+    for (uint8_t i = 0; i < 3; ++i) {
+        pMin = min(pMin, _absolutePoints[i]);
+        pMax = max(pMax, _absolutePoints[i]);
+    }
+    _boundingBox = BoundingBox(pMin, pMax);
 }
 
 float Face::intersectWithRay(const Ray& ray) {
@@ -61,8 +63,8 @@ float Face::intersectWithRay(const Ray& ray) {
     float det, inv_det;
     
     // find vectors for two edges sharing vert0
-    edge1 = _points[1] - _points[0];
-    edge2 = _points[2] - _points[0];
+    edge1 = _absolutePoints[1] - _absolutePoints[0];
+    edge2 = _absolutePoints[2] - _absolutePoints[0];
     
     // Begin calculating determinant - also used to calculate U parameter
     pvec = cross(ray.direction, edge2);
@@ -75,7 +77,7 @@ float Face::intersectWithRay(const Ray& ray) {
             return -1.0f;
         
         // Calculate distance from point 0 to ray origin
-        tvec = ray.origin - _points[0];
+        tvec = ray.origin - _absolutePoints[0];
         
         // Calculate U parameter and test bounds
         u = dot(tvec, pvec);
@@ -101,7 +103,7 @@ float Face::intersectWithRay(const Ray& ray) {
         inv_det = 1.0 / det;
         
         // Calculate distance from point 0 to ray origin
-        tvec = ray.origin - _points[0];
+        tvec = ray.origin - _absolutePoints[0];
         
         // Calculate U parameter and test bounds
         u = dot(tvec, pvec) * inv_det;
@@ -138,9 +140,9 @@ static float calcArea(const vec3& p1, const vec3& p2, const vec3& p3) {
 vec3 Face::normalAtPoint(const vec3& point) {
     
     float
-    aT = calcArea(_points[0], _points[1], _points[2]),
-    aB = calcArea(point, _points[0], _points[1]),
-    aC = calcArea(point, _points[2], _points[1]),
+    aT = calcArea(_absolutePoints[0], _absolutePoints[1], _absolutePoints[2]),
+    aB = calcArea(point, _absolutePoints[0], _absolutePoints[1]),
+    aC = calcArea(point, _absolutePoints[2], _absolutePoints[1]),
     aA = aT - aB - aC;
     float
     c1 = aA / aT,

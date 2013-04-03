@@ -11,12 +11,12 @@
 #include "Renderer.h"
 
 Cube::Cube(vec3 min, vec3 max, Material* material) :
-    Object((max - min) / 2.0f, material), _min(min), _max(max)
+    Object(vec3(), material), _min(min), _max(max)
 {
 }
 
 Cube::Cube(vec3 center, float size, Material* material) :
-    Object(center, material), _min(center - size / 2.0f), _max(center + size / 2.0f)
+    Object(vec3(), material), _min(center - size / 2.0f), _max(center + size / 2.0f)
 {
 }
 
@@ -25,8 +25,8 @@ Cube::~Cube(void) {
 
 void Cube::update(void) {
     Object::update();
-    _min += _absolutePosition;
-    _max += _absolutePosition;
+    _min = vec3(_transformationMatrix * vec4(_min, 1));
+    _max = vec3(_transformationMatrix * vec4(_max, 1));
     _boundingBox = BoundingBox(_min, _max);
 }
 

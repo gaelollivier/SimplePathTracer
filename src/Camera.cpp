@@ -10,22 +10,71 @@
 
 #include "Renderer.h"
 
-Camera::Camera(vec3 position, vec3 target, vec2 size,
-               float fovy, const vec3& upVector,
-               float nearClippingPlaneDistance) :
-    Node(position), _target(target), _size(size),
-    _fovy(fovy), _upVector(upVector),
-    _nearClippingPlaneDistance(nearClippingPlaneDistance),
+Camera::Camera(void) :
+    Camera(vec2(), vec3(), vec3())
+{
+}
+
+Camera::Camera(vec2 size, vec3 position, vec3 target) :
+    Node(position), _size(size), _target(target),
+    _fovy(45.0), _upVector(0.0, 1.0, 0.0), _nearClippingPlaneDistance(0.1),
     _focusDistance(0.0), _aperture(0.0)
 {
 }
 
-
 Camera::~Camera(void) {
+}
+
+vec2 Camera::getSize(void) const {
+    return _size;
+}
+
+void Camera::setSize(const vec2& size) {
+    _size = size;
+}
+
+vec3 Camera::getTarget(void) const {
+    return _target;
+}
+
+void Camera::setTarget(const vec3& target) {
+    _target = target;
+}
+
+float Camera::getFovy(void) const {
+    return _fovy;
+}
+
+void Camera::setFovy(float fovy) {
+    _fovy = fovy;
+}
+
+vec3 Camera::getUpVector(void) const {
+    return _upVector;
+}
+
+void Camera::setUpVector(const vec3& upVector) {
+    _upVector = upVector;
+}
+
+float Camera::getNearClippingPlane(void) const {
+    return _nearClippingPlaneDistance;
+}
+
+void Camera::setNearClippingPlane(float nearClippingPlane) {
+    _nearClippingPlaneDistance = nearClippingPlane;
+}
+
+float Camera::getAperture(void) const {
+    return _aperture;
 }
 
 void Camera::setAperture(float aperture) {
     _aperture = aperture;
+}
+
+float Camera::getFocusDistance(void) const {
+    return _focusDistance;
 }
 
 void Camera::setFocusDistance(float focusDistance) {

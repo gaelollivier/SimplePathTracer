@@ -8,11 +8,17 @@
 
 #include "Material.h"
 
-Material::Material(vec3 color, float reflection, float refraction,
-                   float diffuse, float specular, float shininess, float glossiness) :
-    _color(color), _reflection(reflection), _refraction(refraction),
-    _diffuse(diffuse), _specular(specular), _shininess(shininess),
-    _glossiness(glossiness)
+Material::Material() :
+    _color(), _reflection(0), _refraction(0),
+    _diffuse(1), _specular(1), _shininess(100.0),
+    _glossiness(0.3)
+{
+}
+
+Material::Material(const vec3& color) :
+_color(color), _reflection(0), _refraction(0),
+_diffuse(1), _specular(1), _shininess(100.0),
+_glossiness(0.0)
 {
 }
 
@@ -23,7 +29,7 @@ vec3 Material::getColor(void) const {
     return _color;
 }
 
-void Material::setColor(vec3 color) {
+void Material::setColor(const vec3& color) {
     _color = color;
 }
 

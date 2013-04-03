@@ -42,10 +42,6 @@ Node* AssimpLoader::_loadAssimpNode(const aiScene *scene, aiNode *assimpNode) {
     // Load meshes of the node
     int nbAttr = 8;
     
-//    d(assimpNode->mName.C_Str());
-//    if (std::string(assimpNode->mName.C_Str()) == "S_Studio_Plane")
-//        return node;
-    
     for (uint i = 0; i < assimpNode->mNumMeshes; ++i) {
         aiMesh* assimpMesh = scene->mMeshes[assimpNode->mMeshes[i]];
         

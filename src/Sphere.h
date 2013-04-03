@@ -14,9 +14,13 @@
 class Sphere : public Object {
 public:
     
+    Sphere(void);
     Sphere(vec3 position, float radius, Material* material=NULL);
     
     virtual ~Sphere(void);
+    
+    float   getRadius(void) const;
+    void    setRadius(float radius);
     
     virtual void update(void);
     

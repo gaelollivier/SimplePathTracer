@@ -15,21 +15,38 @@
 class Camera : public Node {
 public:
     
-    Camera(vec3 position, vec3 target, vec2 size,
-           float fovy=45, const vec3& upVector=vec3(0, 1, 0),
-           float nearClippingPlaneDistance=0.1);
+    Camera(void);
+    Camera(vec2 size, vec3 position, vec3 target);
     virtual ~Camera(void);
     
     Ray getRayAtPoint(const vec2& point);
     
     virtual bool hasBoundingBox(void) const;
     
-    void setAperture(float aperture);
-    void setFocusDistance(float focusDistance);
+    vec2    getSize(void) const;
+    void    setSize(const vec2& size);
+    
+    vec3    getTarget(void) const;
+    void    setTarget(const vec3& target);
+    
+    float   getFovy(void) const;
+    void    setFovy(float fovy);
+    
+    vec3    getUpVector(void) const;
+    void    setUpVector(const vec3& upVector);
+    
+    float   getNearClippingPlane(void) const;
+    void    setNearClippingPlane(float nearClippingPlane);
+    
+    float   getAperture(void) const;
+    void    setAperture(float aperture);
+    
+    float   getFocusDistance(void) const;
+    void    setFocusDistance(float focusDistance);
     
 private:
-    vec3    _target;
     vec2    _size;
+    vec3    _target;
     float   _fovy;
     vec3    _upVector;
     float   _nearClippingPlaneDistance;

@@ -10,8 +10,14 @@
 
 #include "Renderer.h"
 
+Light::Light(void) :
+    Light(vec3(), vec3(), 0.0)
+{
+    
+}
+
 Light::Light(vec3 position, vec3 color, float radius) :
-    Node(position), _color(color), _radius(radius)
+    Node(position), _color(color), _radius(radius), _isVisible(true)
 {
 }
 
@@ -27,8 +33,24 @@ vec3 Light::getColor(void) const {
     return _color;
 }
 
+void Light::setColor(const vec3 &color) {
+    _color = color;
+}
+
 float Light::getRadius(void) const {
     return _radius;
+}
+
+void Light::setRadius(float radius) {
+    _radius = radius;
+}
+
+bool Light::isVisible(void) {
+    return _isVisible;
+}
+
+void Light::setIsVisible(bool isVisible) {
+    _isVisible = isVisible;
 }
 
 vec3 Light::getSampledPosition(void) {
@@ -36,6 +58,8 @@ vec3 Light::getSampledPosition(void) {
 }
 
 float Light::intersectWithRay(const Ray& ray) {
+    if (!_isVisible)
+        return -1.0f;
     // From http://en.wikipedia.org/wiki/Line–sphere_intersection
     vec3 oc = ray.origin - _absolutePosition;
     float a = dot(ray.direction, ray.direction);
@@ -51,5 +75,5 @@ float Light::intersectWithRay(const Ray& ray) {
 }
 
 bool Light::hasBoundingBox(void) const {
-    return true;
+    return _isVisible;
 }

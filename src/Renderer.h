@@ -10,11 +10,13 @@
 #define __SimplePathTracer__Renderer__
 
 #include <vector>
-#include <SFML/System.hpp>
+#include <boost/thread.hpp>
 
+#include "RenderSession.h"
 #include "Ray.h"
 #include "Scene.h"
 #include "KdTree.h"
+#include "Image.h"
 
 class Renderer {
 public:
@@ -29,15 +31,15 @@ public:
         uint16_t    threadID;
     };
     
-    Renderer(vec2 const& imageSize, uint16_t nbThreads=8);
+    Renderer(void);
     ~Renderer(void);
     
-    vec2 getImageSize(void) const;
-    vec3* getResultBuffer(void) const;
+    void            setRenderSession(RenderSession* renderSession);
+    RenderSession*  getRenderSession(void) const;
+
+    const Image& getRenderBuffer(void) const;
     
-    void setScene(Scene* scene);
-    
-    void buildKdTree(void);
+    void buildBVH(void);
     
     void render(void);
     
@@ -50,8 +52,8 @@ public:
     bool    castShadowRay(const Ray& ray, float maxDist);
     vec3    getDirectLightning(const Ray& ray, const vec3& intersectPoint,
                                const vec3& normal, Object* intersectedObject);
-    Ray    getBRDFRay(const Ray& ray, const vec3& intersectPoint,
-                      const vec3& normal, Object* intersectedObject);
+    Ray getBRDFRay(const Ray& ray, const vec3& intersectPoint,
+                   const vec3& normal, Object* intersectedObject);
     
     // Random vector generators
     static vec3 uniformSample(void);
@@ -60,12 +62,10 @@ public:
     static void renderFunction(ThreadContext context);
     
 private:
-    uint16_t                    _nbThreads;
-    std::vector<sf::Thread*>    _threads;
+    RenderSession*              _renderSession;
     
-    vec2                        _imageSize;
-    vec3*                       _result;
-    Scene*                      _scene;
+    std::vector<boost::thread*> _threads;
+    Image                       _renderBuffer;
     KdTree*                     _kdTree;
 };
 

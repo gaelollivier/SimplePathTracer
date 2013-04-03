@@ -18,7 +18,8 @@ using namespace glm;
 class Object : public Node {
 public:
     
-    Object(vec3 position=vec3(), Material* material=NULL);
+    Object(void);
+    Object(vec3 position, Material* material=NULL);
     virtual ~Object(void);
     
     void setMaterial(Material* material);
@@ -26,7 +27,7 @@ public:
     
     virtual bool hasBoundingBox(void) const;
     
-    virtual vec3 normalAtPoint(const vec3& point) = 0;
+    virtual vec3 normalAtPoint(const vec3& point);
     
 private:
     Material*   _material;

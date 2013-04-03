@@ -14,9 +14,13 @@
 class Plane : public Object {
 public:
     
+    Plane(void);
     Plane(vec3 position, vec3 normal, Material* material=NULL);
     
     virtual ~Plane(void);
+    
+    vec3    getNormal(void) const;
+    void    setNormal(const vec3& normal);
     
     virtual float intersectWithRay(const Ray& ray);
     virtual vec3 normalAtPoint(const vec3&);

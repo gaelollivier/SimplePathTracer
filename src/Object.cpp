@@ -8,6 +8,12 @@
 
 #include "Object.h"
 
+Object::Object(void) :
+    Node(vec3()), _material(NULL)
+{
+    
+}
+
 Object::Object(vec3 position, Material* material) :
     Node(position), _material(material)
 {
@@ -26,4 +32,8 @@ Material* Object::getMaterial(void) const {
 
 bool Object::hasBoundingBox(void) const {
     return true;
+}
+
+vec3 Object::normalAtPoint(const vec3&) {
+    return vec3();
 }

@@ -16,13 +16,13 @@ using namespace glm;
 class Material {
 public:
     
-    Material(vec3 color, float reflection=0.0, float refraction=0.0,
-             float diffuse=1.0, float specular=1.0, float shininess=100.0,
-             float glossiness=0.3);
+    Material(void);
+    Material(const vec3& color);
+    
     virtual ~Material(void);
     
     vec3    getColor(void) const;
-    void    setColor(vec3 color);
+    void    setColor(const vec3& color);
     
     float   getReflection(void) const;
     void    setReflection(float reflection);

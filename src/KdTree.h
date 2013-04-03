@@ -41,6 +41,7 @@ public:
     KdTree(void);
     ~KdTree(void);
     
+    void    setMaxDepth(uint32_t maxDepth);
     void    build(const std::vector<Node*>& nodes);
     float   traceRay(const Ray& ray, Node*& intersectedNode);
     bool    castShadow(const Ray& ray, float maxDist);
@@ -58,7 +59,7 @@ private:
 
     
     
-    uint32_t            _maxLevel;
+    uint32_t            _maxDepth;
     TreeNode*           _rootNode;
     std::vector<Node*>  _invalidNodes;
 };
