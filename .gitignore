@@ -11,3 +11,8 @@
 *.lai
 *.la
 *.a
+
+build/*
+lib/*
+bin/*
+clean.sh
