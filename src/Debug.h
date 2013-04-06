@@ -17,7 +17,7 @@
 
 using namespace glm;
 
-class RenderSession;
+class RenderingSession;
 class Renderer;
 class Scene;
 class Node;
@@ -48,7 +48,7 @@ namespace Debug {
         template<>
         std::string ToString(const bool& value, uint32_t level);
         template<>
-        std::string ToString(const RenderSession& session, uint32_t level);
+        std::string ToString(const RenderingSession& session, uint32_t level);
         template<>
         std::string ToString(const Renderer& renderer, uint32_t level);
         template<>
@@ -68,7 +68,7 @@ namespace Debug {
         template<>
         std::string ToString(const Plane& node, uint32_t level);
         
-        std::string ToStringNodeChild(const Node* node, uint32_t level);
+        std::string ToStringNodeChilds(const Node& node, uint32_t level);
         
         template<class T>
         std::string ToStringPtr(const T* value, uint32_t level=0) {

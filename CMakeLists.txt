@@ -43,7 +43,7 @@ SET (
 
 FIND_PACKAGE (SFML 2 REQUIRED system window graphics audio network)
 FIND_PACKAGE (PythonLibs)
-FIND_PACKAGE (Boost COMPONENTS system python thread)
+FIND_PACKAGE (Boost COMPONENTS system python thread regex)
 
 FIND_LIBRARY (
     ASSIMP_LIBRARIES

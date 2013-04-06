@@ -53,11 +53,6 @@ void Scene::addNode(Node *node) {
         _currentCamera = camera;
 }
 
-void Scene::removeNode(Node* node) {
-    if (node == _currentCamera)
-        _currentCamera = NULL;
-}
-
 Scene& Scene::operator<<(Node* node) {
     addNode(node);
     return *this;
@@ -75,7 +70,7 @@ std::vector<Node*>& Scene::getNodes(void) {
     return _nodes;
 }
 
-std::vector<Light*>& Scene::getLights(void) {
+const std::vector<Light*>& Scene::getLights(void) const {
     return _lights;
 }
 

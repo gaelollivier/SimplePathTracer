@@ -12,11 +12,12 @@
 #include <vector>
 #include <boost/thread.hpp>
 
-#include "RenderSession.h"
 #include "Ray.h"
 #include "Scene.h"
 #include "KdTree.h"
 #include "Image.h"
+
+class RenderingSession;
 
 class Renderer {
 public:
@@ -34,10 +35,8 @@ public:
     Renderer(void);
     ~Renderer(void);
     
-    void            setRenderSession(RenderSession* renderSession);
-    RenderSession*  getRenderSession(void) const;
-
-    const Image& getRenderBuffer(void) const;
+    void                setRenderingSession(RenderingSession* renderingSession);
+    RenderingSession*   getRenderingSession(void) const;
     
     void buildBVH(void);
     
@@ -62,10 +61,9 @@ public:
     static void renderFunction(ThreadContext context);
     
 private:
-    RenderSession*              _renderSession;
+    RenderingSession*           _renderingSession;
     
     std::vector<boost::thread*> _threads;
-    Image                       _renderBuffer;
     KdTree*                     _kdTree;
 };
 

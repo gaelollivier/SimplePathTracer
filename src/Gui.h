@@ -11,13 +11,13 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "Renderer.h"
+#include "RenderingSession.h"
 
 class Gui {
 public:
     
-    static void show(const Renderer& renderer);
-    static void saveImage(const Renderer& renderer, const std::string& filename);
+    static void show(const RenderingSession& session);
+    static void saveImage(const RenderingSession& session, const std::string& filename);
     
 private:
     Gui(void);

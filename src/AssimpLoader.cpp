@@ -31,14 +31,21 @@ Node* AssimpLoader::loadFile(const std::string &filename) {
         return NULL;
     }
     
+    _nbFacesLoaded = 0;
+    
     // Create the root node and import the scene !
     Node* rootNode = _loadAssimpNode(scene, scene->mRootNode);
+    
+    std::cout << _nbFacesLoaded << " faces loaded" << std::endl;
     
     return rootNode;
 }
 
 Node* AssimpLoader::_loadAssimpNode(const aiScene *scene, aiNode *assimpNode) {
     Node* node = new Node();
+    
+    node->setName(assimpNode->mName.data);
+    
     // Load meshes of the node
     int nbAttr = 8;
     
@@ -50,6 +57,8 @@ Node* AssimpLoader::_loadAssimpNode(const aiScene *scene, aiNode *assimpNode) {
             continue ;
         
         Node* mesh = new Node();
+        
+        mesh->setName(assimpMesh->mName.data);
         
         double *vertexes = new double[assimpMesh->mNumVertices * nbAttr];
         for (uint j = 0; j < assimpMesh->mNumVertices; ++j) {
@@ -66,9 +75,7 @@ Node* AssimpLoader::_loadAssimpNode(const aiScene *scene, aiNode *assimpNode) {
                 vertexes[j * nbAttr + 7] = assimpMesh->mTextureCoords[0][j].y;
             }
         }
-        static int nbFaces = 0;
-        nbFaces += assimpMesh->mNumFaces;
-        std::cout << nbFaces << " faces loaded" << std::endl;
+        _nbFacesLoaded += assimpMesh->mNumFaces;
         for (uint j = 0; j < assimpMesh->mNumFaces; ++j) {
             if (assimpMesh->mFaces[j].mNumIndices == 3) {
                 vec3 v1(vertexes[assimpMesh->mFaces[j].mIndices[0] * nbAttr + 0],

@@ -32,15 +32,14 @@ public:
     vec3    getBackgroundColor(void) const;
     
     void addNode(Node* node);
-    void removeNode(Node* node);
     
     Scene& operator<<(Node* node);
     
     Camera* getCurrentCamera(void);
     Node*   getRootNode(void) const;
     
-    std::vector<Node*>&     getNodes(void);
-    std::vector<Light*>&    getLights(void);
+    std::vector<Node*>&         getNodes(void);
+    const std::vector<Light*>&  getLights(void) const;
 
 private:
     

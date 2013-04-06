@@ -31,6 +31,7 @@ private:
     
     Assimp::Importer    _importer;
     Material*           _defaultMaterial;
+    uint32_t            _nbFacesLoaded;
 };
 
 #endif /* defined(__SimplePathTracer__AssimpLoader__) */

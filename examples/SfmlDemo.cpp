@@ -18,7 +18,7 @@
 #include "Camera.h"
 #include "Renderer.h"
 #include "AssimpLoader.h"
-#include "RenderSession.h"
+#include "RenderingSession.h"
 #include "Gui.h"
 
 void cornellBox(Scene* scene, vec2 cameraSize);
@@ -39,36 +39,41 @@ int main(int, char**) {
     std::cout << "Generating scene...\n";
 
     standfordDragon(scene, cameraSize);
-    //basicScene(scene, cameraSize);
-
+    //assimpLoader(scene, cameraSize);
+    
+    Node::List objects = scene->getRootNode()->search("S_Studio_Plane");
+    for (auto it = objects.begin(), end = objects.end(); it != end; ++it) {
+        (*it)->remove();
+        d(Debug::Detail::ToStringPtr(*it));
+    }
+    
     scene->update();
     
-    RenderSession session;
+    //d(Debug::ToString(*scene));
+    
+    RenderingSession session;
     
     session.setScene(scene);
+    session.setRenderer(new Renderer());
     session.setResolution(imageSize);
     session.setNbSamples(100);
     session.setNbThreads(20);
     session.setUseBVH(true);
-    session.setBVHMaxDepth(20);
-    
-    Renderer renderer;
-    
-    renderer.setRenderSession(&session);
+    session.setBVHMaxDepth(25);
     
     std::cout << "Building BVH...\n";
     
-    renderer.buildBVH();
+    session.getRenderer()->buildBVH();
     
     std::cout << "Done\n";
     
     while (session.getRenderedSamples() < session.getNbSamples()) {
         
         // Render the scene
-        renderer.render();
+        session.render();
         
-        Gui::show(renderer);
-        Gui::saveImage(renderer, "output.png");
+        Gui::show(session);
+        Gui::saveImage(session, "output.png");
         
         session.setTotalEllapsedTime(mainClock.getElapsedTime().asSeconds());
         
@@ -240,7 +245,7 @@ void standfordDragon(Scene* scene, vec2 cameraSize) {
     
     AssimpLoader loader(objectMaterial);
     
-    std::string modelFile = "/Users/Gael/Desktop/models/stanford_dragon/dragon.obj";
+    std::string modelFile = "/Users/Gael/Dev/SimplePathTracer/models/stanford_dragon/dragon.obj";
     Node* model = loader.loadFile(modelFile);
     
     if (model) {
@@ -269,8 +274,8 @@ void assimpLoader(Scene* scene, vec2 cameraSize) {
     Material* objectMaterial = new Material(hexColor(0xffffff));
     
     //objectMaterial->setReflection(1);
-    objectMaterial->setRefraction(1);
-    objectMaterial->setDiffuse(0);
+    //objectMaterial->setRefraction(1);
+    objectMaterial->setDiffuse(1);
     objectMaterial->setSpecular(10);
     objectMaterial->setShininess(100);
     
@@ -295,7 +300,7 @@ void assimpLoader(Scene* scene, vec2 cameraSize) {
         exit(EXIT_FAILURE);
     }
     
-    *scene << new Light(vec3(0, 30, -20), hexColor(0xffffff), 5);
+    *scene << new Light(vec3(0, 30, 20), hexColor(0xffffff), 5);
     
     Camera* camera = new Camera(vec2(cameraSize), vec3(-14, 10, 18), vec3(-2, 5, 0));
     camera->setAperture(0);

@@ -14,6 +14,7 @@
 #define PYTHON_MODULE_INIT initPySpt
 
 #include <boost/python.hpp>
+#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <glm/glm.hpp>
 
 using namespace glm;
@@ -21,7 +22,7 @@ using namespace glm;
 #include "Extensions.hpp"
 #include "Image.h"
 #include "Gui.h"
-#include "RenderSession.h"
+#include "RenderingSession.h"
 #include "Renderer.h"
 #include "Scene.h"
 #include "Material.h"
@@ -31,6 +32,7 @@ using namespace glm;
 #include "Object.h"
 #include "Sphere.h"
 #include "Plane.h"
+#include "AssimpLoader.h"
 
 BOOST_PYTHON_MODULE(PYTHON_MODULE_NAME)
 {
@@ -113,34 +115,46 @@ BOOST_PYTHON_MODULE(PYTHON_MODULE_NAME)
     ;
     
     //
-    // RenderSession
-    //    
-    boost::python::class_<RenderSession>("RenderSession")
+    // RenderingSession
+    //
+    
+    typedef const Image& (RenderingSession::*RenderBufferGetter)(void) const;
+    RenderBufferGetter getRenderBufferPtr = &RenderingSession::getRenderBuffer;
+    
+    boost::python::class_<RenderingSession>("RenderingSession")
     // Operators
-    .def("__str__", &Debug::ToString<RenderSession>)
+    .def("__str__", &Debug::ToString<RenderingSession>)
     
     // Get/Set
-    .def("setResolution", &RenderSession::setResolution)
-    .def("getResolution", &RenderSession::getResolution)
-    .def("setNbThreads", &RenderSession::setNbThreads)
-    .def("getNbThreads", &RenderSession::getNbThreads)
-    .def("setScene", &RenderSession::setScene)
-    .def("getScene", &RenderSession::getScene,
+    .def("setScene", &RenderingSession::setScene)
+    .def("getScene", &RenderingSession::getScene,
          boost::python::return_value_policy<boost::python::reference_existing_object>())
-    .def("setUseBVH", &RenderSession::setUseBVH)
-    .def("setBVHMaxDepth", &RenderSession::setBVHMaxDepth)
-    .def("getBVHMaxDepth", &RenderSession::getBVHMaxDepth)
-    .def("useBVH", &RenderSession::useBVH)
-    .def("setNbSamples", &RenderSession::setNbSamples)
-    .def("getNbSamples", &RenderSession::getNbSamples)
-    .def("setRenderedSamples", &RenderSession::setRenderedSamples)
-    .def("getRenderedSamples", &RenderSession::getRenderedSamples)
+    .def("setRenderer", &RenderingSession::setRenderer)
+    .def("getRenderer", &RenderingSession::getRenderer,
+         boost::python::return_value_policy<boost::python::reference_existing_object>())
+    .def("setResolution", &RenderingSession::setResolution)
+    .def("getResolution", &RenderingSession::getResolution)
+    .def("setNbSamples", &RenderingSession::setNbSamples)
+    .def("getNbSamples", &RenderingSession::getNbSamples)
+    .def("setNbThreads", &RenderingSession::setNbThreads)
+    .def("getNbThreads", &RenderingSession::getNbThreads)
+    .def("setUseBVH", &RenderingSession::setUseBVH)
+    .def("useBVH", &RenderingSession::useBVH)
+    .def("setBVHMaxDepth", &RenderingSession::setBVHMaxDepth)
+    .def("getBVHMaxDepth", &RenderingSession::getBVHMaxDepth)
+    .def("getRenderBuffer", getRenderBufferPtr,
+         boost::python::return_value_policy<boost::python::reference_existing_object>())
+    .def("setRenderedSamples", &RenderingSession::setRenderedSamples)
+    .def("getRenderedSamples", &RenderingSession::getRenderedSamples)
     
     // Stats functions
-    .def("setLastSampleTime", &RenderSession::setLastSampleTime)
-    .def("logRenderingTime", &RenderSession::logRenderingTime)
-    .def("setTotalEllapsedTime", &RenderSession::setTotalEllapsedTime)
-    .def("getStats", &RenderSession::getStats)
+    .def("setLastSampleTime", &RenderingSession::setLastSampleTime)
+    .def("logRenderingTime", &RenderingSession::logRenderingTime)
+    .def("setTotalEllapsedTime", &RenderingSession::setTotalEllapsedTime)
+    .def("getStats", &RenderingSession::getStats)
+    
+    // Rendering
+    .def("render", &RenderingSession::render)
     ;
     
     //
@@ -151,15 +165,13 @@ BOOST_PYTHON_MODULE(PYTHON_MODULE_NAME)
     .def("__str__", &Debug::ToString<Renderer>)
     
     // Get/Set
-    .def("setRenderSession", &Renderer::setRenderSession)
-    .def("getRenderSession", &Renderer::getRenderSession,
+    .def("setRenderingSession", &Renderer::setRenderingSession)
+    .def("getRenderingSession", &Renderer::getRenderingSession,
          boost::python::return_value_policy<boost::python::reference_existing_object>())
     
     // Member functions
     .def("buildBVH", &Renderer::buildBVH)
     .def("render", &Renderer::render)
-    .def("getRenderBuffer", &Renderer::getRenderBuffer,
-         boost::python::return_value_policy<boost::python::reference_existing_object>())
     ;
     
     //
@@ -170,8 +182,20 @@ BOOST_PYTHON_MODULE(PYTHON_MODULE_NAME)
     .def("__str__", &Debug::ToString<Scene>)
     
     // Member functions
-    .def("addNode", &Scene::addNode)
     .def("update", &Scene::update)
+    .def("setExposure", &Scene::setExposure)
+    .def("getExposure", &Scene::getExposure)
+    .def("setBackgroundColor", &Scene::setBackgroundColor)
+    .def("getBackgroundColor", &Scene::getBackgroundColor)
+    .def("addNode", &Scene::addNode)
+    .def("getCurrentCamera", &Scene::getCurrentCamera,
+         boost::python::return_value_policy<boost::python::reference_existing_object>())
+    .def("getRootNode", &Scene::getRootNode,
+         boost::python::return_value_policy<boost::python::reference_existing_object>())
+    .def("getNodes", &Scene::getNodes,
+         boost::python::return_value_policy<boost::python::reference_existing_object>())
+    .def("getLights", &Scene::getLights,
+         boost::python::return_value_policy<boost::python::reference_existing_object>())
     ;
     
     //
@@ -220,14 +244,28 @@ BOOST_PYTHON_MODULE(PYTHON_MODULE_NAME)
     .def("__str__", &Debug::ToString<Node>)
     
     // Get/Set
+    .def("getName", &Node::getName)
+    .def("setName", &Node::setName)
     .def("getPosition", &Node::getPosition)
     .def("setPosition", &Node::setPosition)
-    .def("addChild", addChildPtr)
-    .def("addChild", addChildPtr2)
-    
+    .def("getScale", &Node::getScale)
+    .def("setScale", &Node::setScale)
+    .def("setRotation", &Node::setRotation)
+    .def("setParent", &Node::setParent)
+    .def("getParent", &Node::getParent,
+         boost::python::return_value_policy<boost::python::reference_existing_object>())
+
     // Member functions
     .def("update", &Node::update)
+    .def("addChild", addChildPtr)
+    .def("addChild", addChildPtr2)
+    .def("removeChild", &Node::removeChild)
+    .def("remove", &Node::remove)
+    .def("search", &Node::search)
     ;
+    
+    boost::python::class_<Node::List>("NodeList")
+    .def(boost::python::vector_indexing_suite<Node::List>());    
     
     //
     // Camera
@@ -269,7 +307,7 @@ BOOST_PYTHON_MODULE(PYTHON_MODULE_NAME)
     .def(boost::python::init<vec3, vec3, float>())
     
     // Operators
-    .def("__str__", &Debug::ToString<Object>)
+    .def("__str__", &Debug::ToString<Light>)
     
     // Member functions
     .def("update", &Light::update)
@@ -327,6 +365,19 @@ BOOST_PYTHON_MODULE(PYTHON_MODULE_NAME)
     
     // Member functions
     .def("update", &Plane::update)
+    ;
+    
+    //
+    // Assimp Loader
+    //
+    
+    boost::python::class_<AssimpLoader>("AssimpLoader")
+    // Constructors
+    .def(boost::python::init<Material*>())
+    
+    // Member functions
+    .def("loadFile", &AssimpLoader::loadFile,
+         boost::python::return_value_policy<boost::python::reference_existing_object>())
     ;
     
 }

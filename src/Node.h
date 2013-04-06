@@ -17,6 +17,8 @@
 class Node {
 public:
     
+    typedef std::vector<Node*> List;
+    
     Node(std::string name="");
     Node(vec3 position);
     
@@ -24,8 +26,8 @@ public:
     
     virtual void update(void);
     
-    const std::string&  getName(void) const;
-    void                setName(const std::string name);
+    std::string getName(void) const;
+    void        setName(const std::string name);
     
     void setPosition(const vec3 position);
     vec3 getPosition(void) const;
@@ -48,8 +50,15 @@ public:
     
     void addChild(Node* node);
     void addChild(Node* node, bool fastInsert);
+    void removeChild(Node* node);
     std::vector<Node*>& getChilds(void);
     const std::vector<Node*>& getChilds(void) const;
+    
+    //! Remove the node from the scene graph
+    void remove(void);
+    
+    //! Recursively search for a node matching the given regex
+    Node::List search(const std::string& regex);
     
     void setObjectId(uint32_t id);
     uint32_t getObjectId(void) const;

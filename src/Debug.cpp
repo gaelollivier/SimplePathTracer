@@ -10,7 +10,7 @@
 
 #include <iomanip>
 
-#include "RenderSession.h"
+#include "RenderingSession.h"
 #include "Renderer.h"
 #include "Scene.h"
 #include "Node.h"
@@ -46,10 +46,10 @@ std::string Debug::Detail::ToString(const bool& value, uint32_t level) {
 }
 
 template<>
-std::string Debug::Detail::ToString(const RenderSession& session, uint32_t level) {
+std::string Debug::Detail::ToString(const RenderingSession& session, uint32_t level) {
     std::stringstream stream;
     stream
-    << "RenderSession {" << std::endl
+    << "RenderingSession {" << std::endl
     << Debug::indent(level + 1) << "Resolution: " << session.getResolution() << std::endl
     << Debug::indent(level + 1) << "NbThreads: " << session.getNbThreads() << std::endl
     << Debug::indent(level + 1) << "UseBVH: "
@@ -66,8 +66,8 @@ template<>
 std::string Debug::Detail::ToString(const Renderer& renderer, uint32_t level) {
     std::stringstream stream;
     stream << "Renderer {" << std::endl
-    << Debug::indent(level + 1) << "RenderSession: "
-    << Debug::Detail::ToStringPtr(renderer.getRenderSession(), level + 1) << std::endl
+    << Debug::indent(level + 1) << "RenderingSession: "
+    << Debug::Detail::ToStringPtr(renderer.getRenderingSession(), level + 1) << std::endl
     << Debug::indent(level) << "}"
     ;
     return stream.str();
@@ -109,36 +109,41 @@ std::string Debug::Detail::ToString(const Node& node, uint32_t level) {
     stream << "Node {" << std::endl
     << Debug::indent(level + 1) << "Name: \"" << node.getName() << "\"" << std::endl
     << Debug::indent(level + 1) << "Position: " << node.getPosition() << std::endl
-    << Debug::indent(level + 1) << "Childs: {" << std::endl;
-    const std::vector<Node*>& childs = node.getChilds();
-    for (auto it = childs.begin(), end = childs.end(); it != end; ++it) {
-        stream << Debug::indent(level + 2);
-        stream << Debug::Detail::ToStringNodeChild(*it, level + 1);
-    }
-    stream
-    << Debug::indent(level + 1) << "}" << std::endl
+    << Debug::Detail::ToStringNodeChilds(node, level + 1)
     << Debug::indent(level) << "}"
     ;
     return stream.str();
 }
 
-std::string Debug::Detail::ToStringNodeChild(const Node* node, uint32_t level) {
+std::string Debug::Detail::ToStringNodeChilds(const Node& node, uint32_t level) {
     std::stringstream stream;
-    // Try to dynamic cast the node into different node types:
-    if (dynamic_cast<const Sphere*>(node)) {
-        stream << Debug::Detail::ToStringPtr(dynamic_cast<const Sphere*>(node), level + 1)
-        << std::endl;
-    } else if (dynamic_cast<const Plane*>(node)) {
-            stream << Debug::Detail::ToStringPtr(dynamic_cast<const Plane*>(node), level + 1)
-            << std::endl;
-    } else if (dynamic_cast<const Camera*>(node)) {
-        stream << Debug::Detail::ToStringPtr(dynamic_cast<const Camera*>(node), level + 1)
-        << std::endl;
-    } else if (dynamic_cast<const Object*>(node)) {
-        stream << Debug::Detail::ToStringPtr(dynamic_cast<const Object*>(node), level + 1)
-        << std::endl;
+    const std::vector<Node*>& childs = node.getChilds();
+    if (childs.size() > 10) {
+        stream << Debug::indent(level) << "Childs: " << childs.size() << std::endl;
     } else {
-        stream << Debug::Detail::ToStringPtr(node, level + 1) << std::endl;
+        stream << Debug::indent(level) << "Childs: {" << std::endl;
+        for (auto it = childs.begin(), end = childs.end(); it != end; ++it) {
+            stream << Debug::indent(level + 1);
+            
+            Node* child = *it;
+            // Try to dynamic cast the node into different node types:
+            if (dynamic_cast<const Sphere*>(child)) {
+                stream << Debug::Detail::ToStringPtr(dynamic_cast<const Sphere*>(child), level + 2)
+                << std::endl;
+            } else if (dynamic_cast<const Plane*>(child)) {
+                stream << Debug::Detail::ToStringPtr(dynamic_cast<const Plane*>(child), level + 2)
+                << std::endl;
+            } else if (dynamic_cast<const Camera*>(child)) {
+                stream << Debug::Detail::ToStringPtr(dynamic_cast<const Camera*>(child), level + 2)
+                << std::endl;
+            } else if (dynamic_cast<const Object*>(child)) {
+                stream << Debug::Detail::ToStringPtr(dynamic_cast<const Object*>(child), level + 2)
+                << std::endl;
+            } else {
+                stream << Debug::Detail::ToStringPtr(child, level + 2) << std::endl;
+            }
+        }
+        stream << Debug::indent(level) << "}" << std::endl;
     }
     return stream.str();
 }
@@ -157,14 +162,7 @@ std::string Debug::Detail::ToString(const Camera& node, uint32_t level) {
     << std::endl
     << Debug::indent(level + 1) << "Aperture: " << node.getAperture() << std::endl
     << Debug::indent(level + 1) << "Focus distance: " << node.getFocusDistance() << std::endl
-    << Debug::indent(level + 1) << "Childs: {" << std::endl;
-    const std::vector<Node*>& childs = node.getChilds();
-    for (auto it = childs.begin(), end = childs.end(); it != end; ++it) {
-        stream << Debug::indent(level + 2);
-        stream << Debug::Detail::ToStringNodeChild(*it, level + 1);
-    }
-    stream
-    << Debug::indent(level + 1) << "}" << std::endl
+    << Debug::Detail::ToStringNodeChilds(node, level + 1)
     << Debug::indent(level) << "}"
     ;
     return stream.str();
@@ -178,14 +176,7 @@ std::string Debug::Detail::ToString(const Light& node, uint32_t level) {
     << Debug::indent(level + 1) << "Position: " << node.getPosition() << std::endl
     << Debug::indent(level + 1) << "Color: " << node.getColor() << std::endl
     << Debug::indent(level + 1) << "Radius: " << node.getRadius() << std::endl
-    << Debug::indent(level + 1) << "Childs: {" << std::endl;
-    const std::vector<Node*>& childs = node.getChilds();
-    for (auto it = childs.begin(), end = childs.end(); it != end; ++it) {
-        stream << Debug::indent(level + 2);
-        stream << Debug::Detail::ToStringNodeChild(*it, level + 1);
-    }
-    stream
-    << Debug::indent(level + 1) << "}" << std::endl
+    << Debug::Detail::ToStringNodeChilds(node, level + 1)
     << Debug::indent(level) << "}"
     ;
     return stream.str();
@@ -198,14 +189,7 @@ std::string Debug::Detail::ToString(const Object& node, uint32_t level) {
     << Debug::indent(level + 1) << "Name: \"" << node.getName() << "\"" << std::endl    
     << Debug::indent(level + 1) << "Position: " << node.getPosition() << std::endl
     << Debug::indent(level + 1) << "Material: " << node.getMaterial() << std::endl
-    << Debug::indent(level + 1) << "Childs: {" << std::endl;
-    const std::vector<Node*>& childs = node.getChilds();
-    for (auto it = childs.begin(), end = childs.end(); it != end; ++it) {
-        stream << Debug::indent(level + 2);
-        stream << Debug::Detail::ToStringNodeChild(*it, level + 1);
-    }
-    stream
-    << Debug::indent(level + 1) << "}" << std::endl
+    << Debug::Detail::ToStringNodeChilds(node, level + 1)
     << Debug::indent(level) << "}"
     ;
     return stream.str();
@@ -220,14 +204,7 @@ std::string Debug::Detail::ToString(const Sphere& node, uint32_t level) {
     << Debug::indent(level + 1) << "Material: " << ToStringPtr(node.getMaterial(), level + 1)
     << std::endl
     << Debug::indent(level + 1) << "Radius: " << node.getRadius() << std::endl
-    << Debug::indent(level + 1) << "Childs: " << "{" << std::endl;
-    const std::vector<Node*>& childs = node.getChilds();
-    for (auto it = childs.begin(), end = childs.end(); it != end; ++it) {
-        stream << Debug::indent(level + 2);
-        stream << Debug::Detail::ToStringNodeChild(*it, level + 1);
-    }
-    stream
-    << Debug::indent(level + 1) << "}" << std::endl
+    << Debug::Detail::ToStringNodeChilds(node, level + 1)
     << Debug::indent(level) << "}"
     ;
     return stream.str();
@@ -242,14 +219,7 @@ std::string Debug::Detail::ToString(const Plane& node, uint32_t level) {
     << Debug::indent(level + 1) << "Material: " << ToStringPtr(node.getMaterial(), level + 1)
     << std::endl
     << Debug::indent(level + 1) << "Normal: " << node.getNormal() << std::endl
-    << Debug::indent(level + 1) << "Childs: " << "{" << std::endl;
-    const std::vector<Node*>& childs = node.getChilds();
-    for (auto it = childs.begin(), end = childs.end(); it != end; ++it) {
-        stream << Debug::indent(level + 2);
-        stream << Debug::Detail::ToStringNodeChild(*it, level + 1);
-    }
-    stream
-    << Debug::indent(level + 1) << "}" << std::endl
+    << Debug::Detail::ToStringNodeChilds(node, level + 1)
     << Debug::indent(level) << "}"
     ;
     return stream.str();

@@ -9,6 +9,7 @@
 #include "Node.h"
 
 #include <algorithm>
+#include <boost/regex.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 Node::Node(std::string name) :
@@ -47,7 +48,7 @@ void Node::update(void) {
     }
 }
 
-const std::string& Node::getName(void) const {
+std::string Node::getName(void) const {
     return _name;
 }
 
@@ -120,6 +121,40 @@ std::vector<Node*>& Node::getChilds(void) {
 
 const std::vector<Node*>& Node::getChilds(void) const {
     return _childs;
+}
+
+void Node::removeChild(Node* node) {
+    auto it = std::find(_childs.begin(), _childs.end(), node);
+    if (it != _childs.end()) {
+        _childs.erase(it);
+    }
+}
+
+void Node::remove(void) {
+    if (_parent) {
+        _parent->removeChild(this);
+    }
+}
+
+static bool compareNodes(Node* n1, Node* n2) {
+    return n1->getName() < n2->getName();
+}
+
+Node::List Node::search(const std::string& regex) {
+    Node::List result;
+    
+    boost::regex ex(regex);
+    if (!_name.empty() && boost::regex_match(_name, ex)) {
+        result.push_back(this);
+    }
+    for (auto it = _childs.begin(), end = _childs.end(); it != end; ++it) {
+        Node::List childs = (*it)->search(regex);
+        if (childs.size() > 0) {
+            result.insert(result.end(), childs.begin(), childs.end());
+        }
+    }
+    std::sort(result.begin(), result.end(), compareNodes);
+    return result;
 }
 
 void Node::setObjectId(uint32_t id) {

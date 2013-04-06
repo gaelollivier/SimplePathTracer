@@ -13,6 +13,8 @@
 #include <boost/bind.hpp>
 #include <SFML/System.hpp>
 
+#include "RenderingSession.h"
+
 const float     Renderer::Epsilon = 0.0001;
 const uint32_t  Renderer::PathLength = 5;
 
@@ -22,7 +24,7 @@ Renderer::ThreadContext::ThreadContext(Renderer* renderer, uint16_t threadID) :
 }
 
 Renderer::Renderer(void) :
-    _renderSession(NULL), _threads(), _renderBuffer(),
+    _renderingSession(NULL), _threads(),
     _kdTree(NULL)
 {
 }
@@ -38,25 +40,20 @@ Renderer::~Renderer(void) {
         delete _kdTree;
 }
 
-void Renderer::setRenderSession(RenderSession *renderSession) {
-    _renderSession = renderSession;
+void Renderer::setRenderingSession(RenderingSession *renderingSession) {
+    _renderingSession = renderingSession;
 }
 
-RenderSession* Renderer::getRenderSession(void) const {
-    return _renderSession;
-}
-
-
-const Image& Renderer::getRenderBuffer(void) const {
-    return _renderBuffer;
+RenderingSession* Renderer::getRenderingSession(void) const {
+    return _renderingSession;
 }
 
 void Renderer::buildBVH(void) {
-    if (!_renderSession) {
+    if (!_renderingSession) {
         std::cerr << "Renderer: No Render Session specified" << std::endl;
         return ;
     }
-    if (!_renderSession->getScene()) {
+    if (!_renderingSession->getScene()) {
         std::cerr << "Renderer: No Scene specified" << std::endl;
         return ;
     }
@@ -64,27 +61,19 @@ void Renderer::buildBVH(void) {
         delete _kdTree;
     sf::Clock timer;
     _kdTree = new KdTree();
-    _kdTree->setMaxDepth(_renderSession->getBVHMaxDepth());
-    _kdTree->build(_renderSession->getScene()->getNodes());
-    _renderSession->logRenderingTime(timer.getElapsedTime().asSeconds());
+    _kdTree->setMaxDepth(_renderingSession->getBVHMaxDepth());
+    _kdTree->build(_renderingSession->getScene()->getNodes());
+    _renderingSession->logRenderingTime(timer.getElapsedTime().asSeconds());
 }
 
 void Renderer::render(void) {
-    if (!_renderSession) {
-        std::cerr << "Renderer: No Render Session specified" << std::endl;
-        return ;
-    }
-    if (_renderSession->useBVH() && !_kdTree)
+    if (_renderingSession->useBVH() && !_kdTree)
         buildBVH();
     
     sf::Clock timer;
     
     // Create the rendering threads
-    _threads.resize(_renderSession->getNbThreads());
-
-    // Create the render buffer
-    vec2 resolution = _renderSession->getResolution();
-    _renderBuffer.setSize(resolution);
+    _threads.resize(_renderingSession->getNbThreads());
     
     // Launch the rendering threads
     for (uint16_t thread = 0; thread < _threads.size(); ++thread) {
@@ -103,10 +92,10 @@ void Renderer::render(void) {
     _threads.clear();
     
     // Increment the number of rendered samples
-    _renderSession->setRenderedSamples(_renderSession->getRenderedSamples() + 1);
+    _renderingSession->setRenderedSamples(_renderingSession->getRenderedSamples() + 1);
     
-    _renderSession->setLastSampleTime(timer.getElapsedTime().asSeconds());
-    _renderSession->logRenderingTime(timer.getElapsedTime().asSeconds());
+    _renderingSession->setLastSampleTime(timer.getElapsedTime().asSeconds());
+    _renderingSession->logRenderingTime(timer.getElapsedTime().asSeconds());
 }
 
 void Renderer::renderFunction(ThreadContext context) {
@@ -114,15 +103,15 @@ void Renderer::renderFunction(ThreadContext context) {
 }
 
 void Renderer::renderSection(uint16_t threadID) {
-    vec2 resolution = _renderSession->getResolution();
+    vec2 resolution = _renderingSession->getResolution();
     float xStart = ((float)threadID / _threads.size()) * resolution.x;
     float xEnd = xStart + (resolution.x / _threads.size());
     for (float x = xStart; x < xEnd; ++x) {
         for (float y = 0; y < resolution.y; ++y) {
             vec2 pixel = vec2(x, y);
-            vec3 value = _renderBuffer.getPixel(pixel);
+            vec3 value = _renderingSession->getRenderBuffer().getPixel(pixel);
             value += renderPixel(x, y);
-            _renderBuffer.setPixel(pixel, value);
+            _renderingSession->getRenderBuffer().setPixel(pixel, value);
         }
     }
 }
@@ -130,7 +119,7 @@ void Renderer::renderSection(uint16_t threadID) {
 vec3 Renderer::renderPixel(float x, float y) {
     vec3 finalColor = vec3(0, 0, 0);
     
-    vec2 resolution = _renderSession->getResolution();
+    vec2 resolution = _renderingSession->getResolution();
     
     // Normalized pixel coordinates, y axis pointing upwards
     vec2 point = vec2(x / resolution.x, 1.0 - (y / resolution.y));
@@ -138,12 +127,12 @@ vec3 Renderer::renderPixel(float x, float y) {
                         (float)random() / RAND_MAX);
     point += sample / resolution;
     // Calc initial ray
-    Camera* camera = _renderSession->getScene()->getCurrentCamera();
+    Camera* camera = _renderingSession->getScene()->getCurrentCamera();
     Ray ray = camera->getRayAtPoint(point);
     
     finalColor += traceRay(ray);
     
-    finalColor = vec3(1, 1, 1) - exp(finalColor * - _renderSession->getScene()->getExposure());
+    finalColor = vec3(1, 1, 1) - exp(finalColor * - _renderingSession->getScene()->getExposure());
     
     return finalColor;
 }
@@ -176,11 +165,11 @@ vec3 Renderer::traceRay(const Ray& ray, uint32_t level) {
         }
     }
     // No object hit, return background color
-    return _renderSession->getScene()->getBackgroundColor();
+    return _renderingSession->getScene()->getBackgroundColor();
 }
 
 float Renderer::intersectWithNodes(const Ray& ray, Node*& intersectedNode) {
-    std::vector<Node*>& nodes = _renderSession->getScene()->getNodes();
+    std::vector<Node*>& nodes = _renderingSession->getScene()->getNodes();
     Node* node = NULL;
     float minD = -1.0;
     for (auto it = nodes.begin(); it != nodes.end(); ++it) {
@@ -196,7 +185,7 @@ float Renderer::intersectWithNodes(const Ray& ray, Node*& intersectedNode) {
 }
 
 bool Renderer::castShadowRay(const Ray& ray, float maxDist) {
-    std::vector<Node*>& nodes = _renderSession->getScene()->getNodes();
+    std::vector<Node*>& nodes = _renderingSession->getScene()->getNodes();
     for (auto it = nodes.begin(), end = nodes.end(); it != end; ++it) {
         if (!dynamic_cast<Object*>(*it))
             continue;
@@ -215,8 +204,8 @@ vec3 Renderer::getDirectLightning(const Ray& ray, const vec3& intersectPoint,
     if (intersectedObject->getMaterial()->getDiffuse() <= 0.0
         && intersectedObject->getMaterial()->getSpecular() <= 0.0)
         return directLight;
-    std::vector<Light*>& lights = _renderSession->getScene()->getLights();
-    for (auto it = lights.begin(); it != lights.end(); ++it) {
+    const std::vector<Light*>& lights = _renderingSession->getScene()->getLights();
+    for (auto it = lights.begin(), end = lights.end(); it != end; ++it) {
         Light* light = *it;
         // Cast shadow ray
         vec3 toLight = vec3(light->getSampledPosition() - intersectPoint);

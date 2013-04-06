@@ -12,7 +12,11 @@
 *.la
 *.a
 
+# Generated files
 build/*
 lib/*
 bin/*
 clean.sh
+
+# System files
+*.DS_Store

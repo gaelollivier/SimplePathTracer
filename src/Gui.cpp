@@ -10,13 +10,9 @@
 
 Gui Gui::_instance;
 
-void Gui::show(const Renderer& renderer) {
-    const Image& image = renderer.getRenderBuffer();
-    const RenderSession* session = renderer.getRenderSession();
+void Gui::show(const RenderingSession& session) {
+    const Image& image = session.getRenderBuffer();
     vec2 size = image.getSize();
-    
-    if (!session)
-        return ;
     
     if (!Gui::_instance._isInit) {
         Gui::_instance._init(size);
@@ -28,7 +24,7 @@ void Gui::show(const Renderer& renderer) {
     // Copy the image data to the sf::Image
     for (float x = 0; x < size.x; ++x) {
         for (float y = 0; y < size.y; ++y) {
-            vec3 color = image.getPixel(vec2(x, y)) / (float)session->getRenderedSamples();
+            vec3 color = image.getPixel(vec2(x, y)) / (float)session.getRenderedSamples();
             Gui::_instance._image.setPixel(x, y, sf::Color(color.r * 255,
                                                            color.g * 255,
                                                            color.b * 255));
@@ -42,19 +38,15 @@ void Gui::show(const Renderer& renderer) {
     Gui::_instance._window->display();
 }
 
-void Gui::saveImage(const Renderer& renderer, const std::string& filename) {
-    const Image& image = renderer.getRenderBuffer();
-    const RenderSession* session = renderer.getRenderSession();
+void Gui::saveImage(const RenderingSession& session, const std::string& filename) {
+    const Image& image = session.getRenderBuffer();
     vec2 size = image.getSize();
-    
-    if (!session)
-        return ;
     
     Gui::_instance._resizeImage(size);
     // Copy the image data to the sf::Image
     for (float x = 0; x < size.x; ++x) {
         for (float y = 0; y < size.y; ++y) {
-            vec3 color = image.getPixel(vec2(x, y)) / (float)session->getRenderedSamples();
+            vec3 color = image.getPixel(vec2(x, y)) / (float)session.getRenderedSamples();
             Gui::_instance._image.setPixel(x, y, sf::Color(color.r * 255,
                                                            color.g * 255,
                                                            color.b * 255));

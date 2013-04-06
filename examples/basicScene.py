@@ -11,6 +11,8 @@ class App(PySptApp):
 		# Objects
 		self.sphere = Sphere(vec3(0, 0, 0), 2, self.white)
 		self.plane = Plane(vec3(0, -2, 0), vec3(0, 1, 0), self.white)
+		self.sphere.setName('object_sphere')
+		self.plane.setName('object_plane')
 		
 		self.scene.addNode(self.sphere)
 		self.scene.addNode(self.plane)
@@ -19,6 +21,12 @@ class App(PySptApp):
 		self.light = Light(vec3(0, 10, 5), vec3(1, 1, 1), 2)
 		
 		self.scene.addNode(self.light)
+		
+		self.scene.update()
+		
+		found = self.scene.getNodes()
+		for i in range(0, len(found)):
+			print found[i]
 		
 		# Camera
 		self.camera = Camera(vec2(16, 9), vec3(0, 2, 10), vec3(0, 0, 0))

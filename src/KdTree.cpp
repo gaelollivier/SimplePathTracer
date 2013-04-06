@@ -126,6 +126,7 @@ void KdTree::_buildTreeNode(TreeNode* treeNode, uint32_t level) {
     }
     _buildTreeNode(treeNode->leftChild, level + 1);
     _buildTreeNode(treeNode->rightChild, level + 1);
+    treeNode->nodes.clear();
 }
 
 float KdTree::traceRay(const Ray& ray, Node*& intersectedNode) {
