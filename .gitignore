@@ -17,6 +17,7 @@ build/*
 lib/*
 bin/*
 clean.sh
+examples/*.png
 
 # System files
 *.DS_Store
